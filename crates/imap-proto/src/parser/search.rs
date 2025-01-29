@@ -105,236 +105,344 @@ pub fn parse_filters(
         let mut found_parenthesis = false;
         match token {
             Token::Argument(value) => {
-                if value.eq_ignore_ascii_case(b"ALL") {
-                    filters.push(Filter::All);
-                } else if value.eq_ignore_ascii_case(b"ANSWERED") {
-                    filters.push(Filter::Answered);
-                } else if value.eq_ignore_ascii_case(b"BCC") {
-                    filters.push(Filter::Bcc(decode_argument(tokens, decoder)?));
-                } else if value.eq_ignore_ascii_case(b"BEFORE") {
-                    filters.push(Filter::Before(parse_date(
-                        &tokens
-                            .next()
-                            .ok_or_else(|| Cow::from("Expected date"))?
-                            .unwrap_bytes(),
-                    )?));
-                } else if value.eq_ignore_ascii_case(b"BODY") {
-                    filters.push(Filter::Body(decode_argument(tokens, decoder)?));
-                } else if value.eq_ignore_ascii_case(b"CC") {
-                    filters.push(Filter::Cc(decode_argument(tokens, decoder)?));
-                } else if value.eq_ignore_ascii_case(b"DELETED") {
-                    filters.push(Filter::Deleted);
-                } else if value.eq_ignore_ascii_case(b"DRAFT") {
-                    filters.push(Filter::Draft);
-                } else if value.eq_ignore_ascii_case(b"FLAGGED") {
-                    filters.push(Filter::Flagged);
-                } else if value.eq_ignore_ascii_case(b"FROM") {
-                    filters.push(Filter::From(decode_argument(tokens, decoder)?));
-                } else if value.eq_ignore_ascii_case(b"HEADER") {
-                    filters.push(Filter::Header(
-                        decode_argument(tokens, decoder)?,
-                        decode_argument(tokens, decoder)?,
-                    ));
-                } else if value.eq_ignore_ascii_case(b"KEYWORD") {
-                    filters.push(Filter::Keyword(Flag::parse_imap(
-                        tokens
-                            .next()
-                            .ok_or_else(|| Cow::from("Expected keyword"))?
-                            .unwrap_bytes(),
-                    )?));
-                } else if value.eq_ignore_ascii_case(b"LARGER") {
-                    filters.push(Filter::Larger(parse_number::<u32>(
-                        &tokens
-                            .next()
-                            .ok_or_else(|| Cow::from("Expected integer"))?
-                            .unwrap_bytes(),
-                    )?));
-                } else if value.eq_ignore_ascii_case(b"ON") {
-                    filters.push(Filter::On(parse_date(
-                        &tokens
-                            .next()
-                            .ok_or_else(|| Cow::from("Expected date"))?
-                            .unwrap_bytes(),
-                    )?));
-                } else if value.eq_ignore_ascii_case(b"SEEN") {
-                    filters.push(Filter::Seen);
-                } else if value.eq_ignore_ascii_case(b"SENTBEFORE") {
-                    filters.push(Filter::SentBefore(parse_date(
-                        &tokens
-                            .next()
-                            .ok_or_else(|| Cow::from("Expected date"))?
-                            .unwrap_bytes(),
-                    )?));
-                } else if value.eq_ignore_ascii_case(b"SENTON") {
-                    filters.push(Filter::SentOn(parse_date(
-                        &tokens
-                            .next()
-                            .ok_or_else(|| Cow::from("Expected date"))?
-                            .unwrap_bytes(),
-                    )?));
-                } else if value.eq_ignore_ascii_case(b"SENTSINCE") {
-                    filters.push(Filter::SentSince(parse_date(
-                        &tokens
-                            .next()
-                            .ok_or_else(|| Cow::from("Expected date"))?
-                            .unwrap_bytes(),
-                    )?));
-                } else if value.eq_ignore_ascii_case(b"SINCE") {
-                    filters.push(Filter::Since(parse_date(
-                        &tokens
-                            .next()
-                            .ok_or_else(|| Cow::from("Expected date"))?
-                            .unwrap_bytes(),
-                    )?));
-                } else if value.eq_ignore_ascii_case(b"SMALLER") {
-                    filters.push(Filter::Smaller(parse_number::<u32>(
-                        &tokens
-                            .next()
-                            .ok_or_else(|| Cow::from("Expected integer"))?
-                            .unwrap_bytes(),
-                    )?));
-                } else if value.eq_ignore_ascii_case(b"SUBJECT") {
-                    filters.push(Filter::Subject(decode_argument(tokens, decoder)?));
-                } else if value.eq_ignore_ascii_case(b"TEXT") {
-                    filters.push(Filter::Text(decode_argument(tokens, decoder)?));
-                } else if value.eq_ignore_ascii_case(b"TO") {
-                    filters.push(Filter::To(decode_argument(tokens, decoder)?));
-                } else if value.eq_ignore_ascii_case(b"UID") {
-                    filters.push(Filter::Sequence(
-                        parse_sequence_set(
+                hashify::fnc_map_ignore_case!(value.as_slice(),
+                    "ALL" => {
+                        filters.push(Filter::All);
+
+                    },
+                    "ANSWERED" => {
+                        filters.push(Filter::Answered);
+
+                    },
+                    "BCC" => {
+                        filters.push(Filter::Bcc(decode_argument(tokens, decoder)?));
+
+                    },
+                    "BEFORE" => {
+                        filters.push(Filter::Before(parse_date(
                             &tokens
                                 .next()
-                                .ok_or_else(|| Cow::from("Missing sequence set."))?
+                                .ok_or_else(|| Cow::from("Expected date"))?
                                 .unwrap_bytes(),
-                        )?,
-                        true,
-                    ));
-                } else if value.eq_ignore_ascii_case(b"UNANSWERED") {
-                    filters.push(Filter::Unanswered);
-                } else if value.eq_ignore_ascii_case(b"UNDELETED") {
-                    filters.push(Filter::Undeleted);
-                } else if value.eq_ignore_ascii_case(b"UNDRAFT") {
-                    filters.push(Filter::Undraft);
-                } else if value.eq_ignore_ascii_case(b"UNFLAGGED") {
-                    filters.push(Filter::Unflagged);
-                } else if value.eq_ignore_ascii_case(b"UNKEYWORD") {
-                    filters.push(Filter::Unkeyword(Flag::parse_imap(
-                        tokens
-                            .next()
-                            .ok_or_else(|| Cow::from("Expected keyword"))?
-                            .unwrap_bytes(),
-                    )?));
-                } else if value.eq_ignore_ascii_case(b"UNSEEN") {
-                    filters.push(Filter::Unseen);
-                } else if value.eq_ignore_ascii_case(b"OLDER") {
-                    filters.push(Filter::Older(parse_number::<u32>(
-                        &tokens
-                            .next()
-                            .ok_or_else(|| Cow::from("Expected integer"))?
-                            .unwrap_bytes(),
-                    )?));
-                } else if value.eq_ignore_ascii_case(b"YOUNGER") {
-                    filters.push(Filter::Younger(parse_number::<u32>(
-                        &tokens
-                            .next()
-                            .ok_or_else(|| Cow::from("Expected integer"))?
-                            .unwrap_bytes(),
-                    )?));
-                } else if value.eq_ignore_ascii_case(b"OLD") {
-                    filters.push(Filter::Old);
-                } else if value.eq_ignore_ascii_case(b"NEW") {
-                    filters.push(Filter::New);
-                } else if value.eq_ignore_ascii_case(b"RECENT") {
-                    filters.push(Filter::Recent);
-                } else if value.eq_ignore_ascii_case(b"MODSEQ") {
-                    let param = tokens
-                        .next()
-                        .ok_or_else(|| Cow::from("Missing MODSEQ parameters."))?
-                        .unwrap_bytes();
-                    if param.is_empty() || param.iter().any(|ch| !ch.is_ascii_digit()) {
-                        if param.len() <= 7 || !param.starts_with(b"/flags/") {
-                            return Err(format!(
-                                "Unsupported MODSEQ parameter '{}'.",
-                                String::from_utf8_lossy(&param)
-                            )
-                            .into());
-                        }
-                        let flag = Flag::parse_imap((param[7..]).to_vec())?;
-                        let mod_seq_entry = match tokens.next() {
-                            Some(Token::Argument(value)) if value.eq_ignore_ascii_case(b"all") => {
-                                ModSeqEntry::All(flag)
-                            }
-                            Some(Token::Argument(value))
-                                if value.eq_ignore_ascii_case(b"shared") =>
-                            {
-                                ModSeqEntry::Shared(flag)
-                            }
-                            Some(Token::Argument(value)) if value.eq_ignore_ascii_case(b"priv") => {
-                                ModSeqEntry::Private(flag)
-                            }
-                            Some(token) => {
-                                return Err(
-                                    format!("Unsupported MODSEQ parameter '{}'.", token).into()
-                                );
-                            }
-                            None => {
-                                return Err("Missing MODSEQ entry-type-req parameter.".into());
-                            }
-                        };
-                        filters.push(Filter::ModSeq((
-                            parse_number::<u64>(
+                        )?));
+
+                    },
+                    "BODY" => {
+                        filters.push(Filter::Body(decode_argument(tokens, decoder)?));
+
+
+                    },
+                    "CC" => {
+                        filters.push(Filter::Cc(decode_argument(tokens, decoder)?));
+
+
+                    },
+                    "DELETED" => {
+                        filters.push(Filter::Deleted);
+
+
+                    },
+                    "DRAFT" => {
+                        filters.push(Filter::Draft);
+
+
+                    },
+                    "FLAGGED" => {
+                        filters.push(Filter::Flagged);
+
+
+                    },
+                    "FROM" => {
+                        filters.push(Filter::From(decode_argument(tokens, decoder)?));
+
+
+                    },
+                    "HEADER" => {
+                        filters.push(Filter::Header(
+                            decode_argument(tokens, decoder)?,
+                            decode_argument(tokens, decoder)?,
+                        ));
+
+
+                    },
+                    "KEYWORD" => {
+                        filters.push(Filter::Keyword(Flag::parse_imap(
+                            tokens
+                                .next()
+                                .ok_or_else(|| Cow::from("Expected keyword"))?
+                                .unwrap_bytes(),
+                        )?));
+
+
+                    },
+                    "LARGER" => {
+                        filters.push(Filter::Larger(parse_number::<u32>(
+                            &tokens
+                                .next()
+                                .ok_or_else(|| Cow::from("Expected integer"))?
+                                .unwrap_bytes(),
+                        )?));
+
+
+                    },
+                    "ON" => {
+                        filters.push(Filter::On(parse_date(
+                            &tokens
+                                .next()
+                                .ok_or_else(|| Cow::from("Expected date"))?
+                                .unwrap_bytes(),
+                        )?));
+
+
+                    },
+                    "SEEN" => {
+                        filters.push(Filter::Seen);
+
+
+                    },
+                    "SENTBEFORE" => {
+                        filters.push(Filter::SentBefore(parse_date(
+                            &tokens
+                                .next()
+                                .ok_or_else(|| Cow::from("Expected date"))?
+                                .unwrap_bytes(),
+                        )?));
+
+
+                    },
+                    "SENTON" => {
+                        filters.push(Filter::SentOn(parse_date(
+                            &tokens
+                                .next()
+                                .ok_or_else(|| Cow::from("Expected date"))?
+                                .unwrap_bytes(),
+                        )?));
+
+
+                    },
+                    "SENTSINCE" => {
+                        filters.push(Filter::SentSince(parse_date(
+                            &tokens
+                                .next()
+                                .ok_or_else(|| Cow::from("Expected date"))?
+                                .unwrap_bytes(),
+                        )?));
+
+
+                    },
+                    "SINCE" => {
+                        filters.push(Filter::Since(parse_date(
+                            &tokens
+                                .next()
+                                .ok_or_else(|| Cow::from("Expected date"))?
+                                .unwrap_bytes(),
+                        )?));
+
+
+                    },
+                    "SMALLER" => {
+                        filters.push(Filter::Smaller(parse_number::<u32>(
+                            &tokens
+                                .next()
+                                .ok_or_else(|| Cow::from("Expected integer"))?
+                                .unwrap_bytes(),
+                        )?));
+
+
+                    },
+                    "SUBJECT" => {
+                        filters.push(Filter::Subject(decode_argument(tokens, decoder)?));
+
+
+                    },
+                    "TEXT" => {
+                        filters.push(Filter::Text(decode_argument(tokens, decoder)?));
+
+
+                    },
+                    "TO" => {
+                        filters.push(Filter::To(decode_argument(tokens, decoder)?));
+
+
+                    },
+                    "UID" => {
+                        filters.push(Filter::Sequence(
+                            parse_sequence_set(
                                 &tokens
                                     .next()
-                                    .ok_or_else(|| {
-                                        Cow::from("Missing MODSEQ mod-sequence-valzer parameter.")
-                                    })?
+                                    .ok_or_else(|| Cow::from("Missing sequence set."))?
                                     .unwrap_bytes(),
                             )?,
-                            mod_seq_entry,
-                        )));
-                    } else {
-                        filters.push(Filter::ModSeq((
-                            parse_number::<u64>(&param)?,
-                            ModSeqEntry::None,
-                        )));
-                    }
-                } else if value.eq_ignore_ascii_case(b"EMAILID") {
-                    filters.push(Filter::EmailId(
-                        tokens
-                            .next()
-                            .ok_or_else(|| Cow::from("Expected an EMAILID value."))?
-                            .unwrap_string()?,
-                    ));
-                } else if value.eq_ignore_ascii_case(b"THREADID") {
-                    filters.push(Filter::ThreadId(
-                        tokens
-                            .next()
-                            .ok_or_else(|| Cow::from("Expected an THREADID value."))?
-                            .unwrap_string()?,
-                    ));
-                } else if value.eq_ignore_ascii_case(b"OR") {
-                    if filters_stack.len() > 10 {
-                        return Err(Cow::from("Too many nested filters"));
-                    }
+                            true,
+                        ));
 
-                    filters_stack.push((filters, operator, filters_len));
-                    filters_len = 0;
-                    filters = Vec::with_capacity(2);
-                    operator = Filter::Or;
-                    continue;
-                } else if value.eq_ignore_ascii_case(b"NOT") {
-                    if filters_stack.len() > 10 {
-                        return Err(Cow::from("Too many nested filters"));
-                    }
 
-                    filters_stack.push((filters, operator, filters_len));
-                    filters_len = 0;
-                    filters = Vec::with_capacity(1);
-                    operator = Filter::Not;
-                    continue;
-                } else {
-                    filters.push(Filter::Sequence(parse_sequence_set(&value)?, false));
-                }
+                    },
+                    "UNANSWERED" => {
+                        filters.push(Filter::Unanswered);
+
+
+                    },
+                    "UNDELETED" => {
+                        filters.push(Filter::Undeleted);
+
+
+                    },
+                    "UNDRAFT" => {
+                        filters.push(Filter::Undraft);
+
+
+                    },
+                    "UNFLAGGED" => {
+                        filters.push(Filter::Unflagged);
+
+
+                    },
+                    "UNKEYWORD" => {
+                        filters.push(Filter::Unkeyword(Flag::parse_imap(
+                            tokens
+                                .next()
+                                .ok_or_else(|| Cow::from("Expected keyword"))?
+                                .unwrap_bytes(),
+                        )?));
+
+
+                    },
+                    "UNSEEN" => {
+                        filters.push(Filter::Unseen);
+
+
+                    },
+                    "OLDER" => {
+                        filters.push(Filter::Older(parse_number::<u32>(
+                            &tokens
+                                .next()
+                                .ok_or_else(|| Cow::from("Expected integer"))?
+                                .unwrap_bytes(),
+                        )?));
+
+
+                    },
+                    "YOUNGER" => {
+                        filters.push(Filter::Younger(parse_number::<u32>(
+                            &tokens
+                                .next()
+                                .ok_or_else(|| Cow::from("Expected integer"))?
+                                .unwrap_bytes(),
+                        )?));
+
+
+                    },
+                    "OLD" => {
+                        filters.push(Filter::Old);
+
+                    },
+                    "NEW" => {
+                        filters.push(Filter::New);
+
+                    },
+                    "RECENT" => {
+                        filters.push(Filter::Recent);
+
+                    },
+                    "MODSEQ" => {
+                        let param = tokens
+                            .next()
+                            .ok_or_else(|| Cow::from("Missing MODSEQ parameters."))?
+                            .unwrap_bytes();
+                        if param.is_empty() || param.iter().any(|ch| !ch.is_ascii_digit()) {
+                            if param.len() <= 7 || !param.starts_with(b"/flags/") {
+                                return Err(format!(
+                                    "Unsupported MODSEQ parameter '{}'.",
+                                    String::from_utf8_lossy(&param)
+                                )
+                                .into());
+                            }
+                            let flag = Flag::parse_imap((param[7..]).to_vec())?;
+                            let mod_seq_entry = match tokens.next() {
+                                Some(Token::Argument(value)) if value.eq_ignore_ascii_case(b"all") => {
+                                    ModSeqEntry::All(flag)
+                                }
+                                Some(Token::Argument(value))
+                                    if value.eq_ignore_ascii_case(b"shared") =>
+                                {
+                                    ModSeqEntry::Shared(flag)
+                                }
+                                Some(Token::Argument(value)) if value.eq_ignore_ascii_case(b"priv") => {
+                                    ModSeqEntry::Private(flag)
+                                }
+                                Some(token) => {
+                                    return Err(
+                                        format!("Unsupported MODSEQ parameter '{}'.", token).into()
+                                    );
+                                }
+                                None => {
+                                    return Err("Missing MODSEQ entry-type-req parameter.".into());
+                                }
+                            };
+                            filters.push(Filter::ModSeq((
+                                parse_number::<u64>(
+                                    &tokens
+                                        .next()
+                                        .ok_or_else(|| {
+                                            Cow::from("Missing MODSEQ mod-sequence-valzer parameter.")
+                                        })?
+                                        .unwrap_bytes(),
+                                )?,
+                                mod_seq_entry,
+                            )));
+                        } else {
+                            filters.push(Filter::ModSeq((
+                                parse_number::<u64>(&param)?,
+                                ModSeqEntry::None,
+                            )));
+                        }
+
+                    },
+                    "EMAILID" => {
+                        filters.push(Filter::EmailId(
+                            tokens
+                                .next()
+                                .ok_or_else(|| Cow::from("Expected an EMAILID value."))?
+                                .unwrap_string()?,
+                        ));
+
+                    },
+                    "THREADID" => {
+                        filters.push(Filter::ThreadId(
+                            tokens
+                                .next()
+                                .ok_or_else(|| Cow::from("Expected an THREADID value."))?
+                                .unwrap_string()?,
+                        ));
+
+                    },
+                    "OR" => {
+                        if filters_stack.len() > 10 {
+                            return Err(Cow::from("Too many nested filters"));
+                        }
+
+                        filters_stack.push((filters, operator, filters_len));
+                        filters_len = 0;
+                        filters = Vec::with_capacity(2);
+                        operator = Filter::Or;
+                        continue;
+                    },
+                    "NOT" => {
+                        if filters_stack.len() > 10 {
+                            return Err(Cow::from("Too many nested filters"));
+                        }
+
+                        filters_stack.push((filters, operator, filters_len));
+                        filters_len = 0;
+                        filters = Vec::with_capacity(1);
+                        operator = Filter::Not;
+                        continue;
+                    },
+                    _ => {
+                        filters.push(Filter::Sequence(parse_sequence_set(&value)?, false));
+                    }
+                );
 
                 filters_len += 1;
             }
@@ -407,21 +515,22 @@ pub fn decode_argument(
 
 impl ResultOption {
     pub fn parse(value: &[u8]) -> super::Result<Self> {
-        if value.eq_ignore_ascii_case(b"min") {
-            Ok(Self::Min)
-        } else if value.eq_ignore_ascii_case(b"max") {
-            Ok(Self::Max)
-        } else if value.eq_ignore_ascii_case(b"all") {
-            Ok(Self::All)
-        } else if value.eq_ignore_ascii_case(b"count") {
-            Ok(Self::Count)
-        } else if value.eq_ignore_ascii_case(b"save") {
-            Ok(Self::Save)
-        } else if value.eq_ignore_ascii_case(b"context") {
-            Ok(Self::Context)
-        } else {
-            Err(format!("Invalid result option {:?}", String::from_utf8_lossy(value)).into())
-        }
+        hashify::tiny_map_ignore_case!(
+            value,
+            "min" => Self::Min,
+            "max" => Self::Max,
+            "all" => Self::All,
+            "count" => Self::Count,
+            "save" => Self::Save,
+            "context" => Self::Context,
+        )
+        .ok_or_else(|| {
+            format!(
+                "Invalid result option '{}'.",
+                String::from_utf8_lossy(value)
+            )
+            .into()
+        })
     }
 }
 
