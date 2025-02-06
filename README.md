@@ -23,7 +23,7 @@
   <a href="https://twitter.com/stalwartlabs"><img src="https://img.shields.io/twitter/follow/stalwartlabs?style=flat-square&logo=x&label=Follow%20on%20Twitter" alt="Twitter"></a>
 </p>
 <p align="center">
-  <a href="https://discord.gg/jtgtCNj66U"><img src="https://img.shields.io/discord/923615863037390889?label=Join%20Discord&logo=discord&style=flat-square" alt="Discord"></a>
+  <a href="https://discord.gg/aVQr3jF8jd"><img src="https://img.shields.io/discord/923615863037390889?label=Join%20Discord&logo=discord&style=flat-square" alt="Discord"></a>
   &nbsp;
   <a href="https://www.reddit.com/r/stalwartlabs/"><img src="https://img.shields.io/reddit/subreddit-subscribers/stalwartlabs?label=Join%20%2Fr%2Fstalwartlabs&logo=reddit&style=flat-square" alt="Reddit"></a>
 </p>
@@ -106,6 +106,10 @@ Key features:
 
 <img src="./img/screencast-setup.gif">
 
+## Presentation
+
+**Want a deeper dive?** Need to explain to your boss why Stalwart is the perfect fit? Whether you're evaluating options, making a case to your team, or simply curious about how it all works under the hood, these slides walk you through the key features, architecture, and benefits of Stalwart Mail Server. Browse the [slides](https://stalw.art/slides) to see what makes it stand out.
+
 ## Get Started
 
 Install Stalwart Mail Server on your server by following the instructions for your platform:
@@ -125,7 +129,7 @@ Additionally you may purchase an [premium support](https://stalw.art/support) to
 
 ## Sponsorship
 
-Your support is crucial in helping us continue to improve the project, add new features, and maintain the highest level of quality. By becoming a sponsor on [Open Collective](https://opencollective.com/stalwart), you help fund the development and future of Stalwart Mail Server. As a thank-you, sponsors who contribute $10 per month or more will automatically receive a [Small Business Edition](https://stalw.art/small-business/) license, which includes all the powerful features of the [Enterprise edition](https://stalw.art/enterprise/).
+Your support is crucial in helping us continue to improve the project, add new features, and maintain the highest level of quality. By [becoming a sponsor](https://opencollective.com/stalwart), you help fund the development and future of Stalwart Mail Server. As a thank-you, sponsors who contribute $5 per month or more will automatically receive a [Small Business Edition](https://stalw.art/small-business/) license, which includes all the powerful features of the [Enterprise edition](https://stalw.art/enterprise/).
 
 These are some of our open-source sponsors:
 
