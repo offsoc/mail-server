@@ -12,17 +12,17 @@ use std::{
 };
 
 use mail_auth::{
+    MessageAuthenticator,
     hickory_resolver::{
+        AsyncResolver, TokioAsyncResolver,
         config::{NameServerConfig, Protocol, ResolverConfig, ResolverOpts},
         system_conf::read_system_conf,
-        AsyncResolver, TokioAsyncResolver,
     },
-    MessageAuthenticator,
 };
 use serde::{Deserialize, Serialize};
 use utils::{
     cache::CacheItemWeight,
-    config::{utils::ParseValue, Config},
+    config::{Config, utils::ParseValue},
 };
 
 use crate::Server;
@@ -109,10 +109,6 @@ impl Resolvers {
             "quad9-tls" => (ResolverConfig::quad9_tls(), ResolverOpts::default()),
             "google" => (ResolverConfig::google(), ResolverOpts::default()),
             "system" => read_system_conf()
-                .map(|(conf, mut opts)| {
-                    opts.edns0 = true;
-                    (conf, opts)
-                })
                 .map_err(|err| {
                     config.new_build_error(
                         "resolver.type",
@@ -219,6 +215,10 @@ impl Resolvers {
         if let Some(attempts) = config.property("resolver.attempts") {
             opts.attempts = attempts;
         }
+        opts.edns0 = config
+            .property_or_default("resolver.edns", "true")
+            .unwrap_or(true);
+
         // We already have a cache, so disable the built-in cache
         opts.cache_size = 0;
 
